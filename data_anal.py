@@ -75,76 +75,76 @@ pose_df.columns = pose_landmark_names
 pose_df.to_csv("./")
 print(pose_df)
 
-# pose_ts = pose_df.mean(axis=1)  # 관절의 평균 위치를 사용. 필요한 경우 다른 통계치를 사용할 수 있음
-#
-# # 3. 데이터 전처리 (정상화)
-# diff = pose_ts.diff().dropna()
-# result = adfuller(diff)
-# if result[1] < 0.05:  # p-value
-#     stationary_data = diff
-# else:
-#     stationary_data = pose_ts
-#
-# # 4. SARIMA 모델 학습 및 최적 매개변수 찾기
-# p = d = q = P = D = Q = range(0, 2)
-# s = [fps]  # 비디오의 초당 프레임 수를 계절성 주기로 설정
-# pdq = list(product(p, d, q))
-# seasonal_pdq = list(product(P, D, Q, s))
-#
-# best_aic = float('inf')
-# best_params = None
-#
-# for param in pdq:
-#     for seasonal_param in seasonal_pdq:
-#         try:
-#             model = SARIMAX(stationary_data,
-#                             order=param,
-#                             seasonal_order=seasonal_param,
-#                             enforce_stationarity=False,
-#                             enforce_invertibility=False)
-#             results = model.fit()
-#             if results.aic < best_aic:
-#                 best_aic = results.aic
-#                 best_params = (param, seasonal_param)
-#         except Exception as e:
-#             continue
-#
-# # 5. 최적 매개변수를 사용하여 SARIMA 모델 학습
-# optimal_model = SARIMAX(stationary_data,
-#                         order=best_params[0],
-#                         seasonal_order=best_params[1],
-#                         enforce_stationarity=False,
-#                         enforce_invertibility=False)
-# optimal_results = optimal_model.fit()
-#
-# # 6. 주기성 및 특징 분석
-# import matplotlib.pyplot as plt
-#
-# # 주기성 확인 (계절성 성분)
-# seasonal_component = optimal_results.seasonal_components
-# plt.plot(seasonal_component)
-# plt.title('Seasonal Component')
-# plt.show()
-#
-# # 추세 확인 (추세 성분)
-# trend_component = optimal_results.trend_components
-# plt.plot(trend_component)
-# plt.title('Trend Component')
-# plt.show()
-#
-# # 예측
-# forecast_steps = 100  # 예측할 프레임 수
-# forecast = optimal_results.get_forecast(steps=forecast_steps)
-# forecast_confidence_intervals = forecast.conf_int()
-#
-# # 예측 결과 시각화
-# plt.plot(stationary_data, label='Observed')
-# plt.plot(forecast.predicted_mean, label='Forecast', color='r')
-# plt.fill_between(forecast_confidence_intervals.index,
-#                  forecast_confidence_intervals.iloc[:, 0],
-#                  forecast_confidence_intervals.iloc[:, 1], color='pink')
-# plt.xlabel('Frame')
-# plt.ylabel('Pose Data')
-# plt.legend()
-# plt.show()
+pose_ts = pose_df.mean(axis=1)  # 관절의 평균 위치를 사용. 필요한 경우 다른 통계치를 사용할 수 있음
+
+# 3. 데이터 전처리 (정상화)
+diff = pose_ts.diff().dropna()
+result = adfuller(diff)
+if result[1] < 0.05:  # p-value
+    stationary_data = diff
+else:
+    stationary_data = pose_ts
+
+# 4. SARIMA 모델 학습 및 최적 매개변수 찾기
+p = d = q = P = D = Q = range(0, 2)
+s = [fps]  # 비디오의 초당 프레임 수를 계절성 주기로 설정
+pdq = list(product(p, d, q))
+seasonal_pdq = list(product(P, D, Q, s))
+
+best_aic = float('inf')
+best_params = None
+
+for param in pdq:
+    for seasonal_param in seasonal_pdq:
+        try:
+            model = SARIMAX(stationary_data,
+                            order=param,
+                            seasonal_order=seasonal_param,
+                            enforce_stationarity=False,
+                            enforce_invertibility=False)
+            results = model.fit()
+            if results.aic < best_aic:
+                best_aic = results.aic
+                best_params = (param, seasonal_param)
+        except Exception as e:
+            continue
+
+# 5. 최적 매개변수를 사용하여 SARIMA 모델 학습
+optimal_model = SARIMAX(stationary_data,
+                        order=best_params[0],
+                        seasonal_order=best_params[1],
+                        enforce_stationarity=False,
+                        enforce_invertibility=False)
+optimal_results = optimal_model.fit()
+
+# 6. 주기성 및 특징 분석
+import matplotlib.pyplot as plt
+
+# 주기성 확인 (계절성 성분)
+seasonal_component = optimal_results.seasonal_components
+plt.plot(seasonal_component)
+plt.title('Seasonal Component')
+plt.show()
+
+# 추세 확인 (추세 성분)
+trend_component = optimal_results.trend_components
+plt.plot(trend_component)
+plt.title('Trend Component')
+plt.show()
+
+# 예측
+forecast_steps = 100  # 예측할 프레임 수
+forecast = optimal_results.get_forecast(steps=forecast_steps)
+forecast_confidence_intervals = forecast.conf_int()
+
+# 예측 결과 시각화
+plt.plot(stationary_data, label='Observed')
+plt.plot(forecast.predicted_mean, label='Forecast', color='r')
+plt.fill_between(forecast_confidence_intervals.index,
+                 forecast_confidence_intervals.iloc[:, 0],
+                 forecast_confidence_intervals.iloc[:, 1], color='pink')
+plt.xlabel('Frame')
+plt.ylabel('Pose Data')
+plt.legend()
+plt.show()
 
