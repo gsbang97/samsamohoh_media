@@ -80,11 +80,7 @@ pose_ts = pose_df.mean(axis=1)  # 관절의 평균 위치를 사용. 필요한 �
 # 3. 데이터 전처리 (정상화)
 diff = pose_ts.diff().dropna()
 result = adfuller(diff)
-if result[1] < 0.05:  # p-value
-    stationary_data = diff
-else:
-    stationary_data = pose_ts
-
+stationary_data = diff if result[1] < 0.05 else pose_ts
 # 4. SARIMA 모델 학습 및 최적 매개변수 찾기
 p = d = q = P = D = Q = range(0, 2)
 s = [fps]  # 비디오의 초당 프레임 수를 계절성 주기로 설정
