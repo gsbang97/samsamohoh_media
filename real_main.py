@@ -74,19 +74,6 @@ def extractData(video_path):
     pose_df.to_csv("./data/pose3.csv", index=False)
     return pose_df
 
-def remove_outliers_iqr(data, k=1.5):
-    """
-    IQR을 사용하여 이상치를 제거합니다.
-    :param data: 시계열 데이터를 포함한 1차원 배열
-    :param k: 이상치 판단 기준 (기본값: 1.5)
-    :return: 이상치가 제거된 1차원 배열
-    """
-    q1 = np.percentile(data, 25)
-    q3 = np.percentile(data, 75)
-    iqr = q3 - q1
-    lower_bound = q1 - k * iqr
-    upper_bound = q3 + k * iqr
-    return data[(data >= lower_bound) & (data <= upper_bound)]
 def processData(pose_df):
     # pose_df = pd.read_csv("./data/pose3.csv")
     landmark_columns = pose_df.columns
